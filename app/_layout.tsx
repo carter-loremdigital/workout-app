@@ -37,6 +37,13 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+          {/* Add your new screen */}
+          {/* <Stack.Screen
+            name="new-screen"
+            options={{ title: "New Screen" }} // Set the header title for this screen
+          /> */}
+
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
