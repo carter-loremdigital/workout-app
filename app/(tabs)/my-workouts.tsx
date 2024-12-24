@@ -2,10 +2,10 @@ import React from "react";
 import { StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const SettingsPage = () => {
+const MyWorkoutsPage = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+      <Text style={styles.title}>My Workouts</Text>
     </SafeAreaView>
   );
 };
@@ -24,4 +24,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SettingsPage;
+export default MyWorkoutsPage;

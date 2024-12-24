@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Full Body Workout",
+    "duration": "30 minutes",
+    "difficulty": "Intermediate"
+  },
+  {
+    "id": 2,
+    "name": "Cardio Blast",
+    "duration": "20 minutes",
+    "difficulty": "Beginner"
+  },
+  {
+    "id": 3,
+    "name": "Strength Training",
+    "duration": "45 minutes",
+    "difficulty": "Advanced"
+  }
+]
