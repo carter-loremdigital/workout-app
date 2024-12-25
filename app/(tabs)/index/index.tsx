@@ -2,9 +2,11 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Text, Button } from "react-native-paper";
+import { useNavigation } from "expo-router";
 
 const HomeScreen = () => {
   const router = useRouter();
+  // const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
@@ -19,7 +21,8 @@ const HomeScreen = () => {
           icon="weight-lifter"
           mode="contained"
           // onPress={() => console.log("Button 1 Pressed")}
-          onPress={() => router.push("/new-screen")}
+          // onPress={() => navigation.navigate("/")}
+          onPress={() => router.push("./start-workout")}
           style={styles.button}
         >
           Start Workout

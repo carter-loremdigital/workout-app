@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, View, FlatList, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import workoutLogs from "../../assets/data/workoutLogs.json";
+import workoutLogs from "../../../assets/data/workoutLogs.json";
 
 const WorkoutLogPage = () => {
   const renderWorkoutLog = ({ item }: { item: any }) => (
