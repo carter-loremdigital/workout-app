@@ -6,6 +6,7 @@ import workouts from "../../../assets/data/workouts.json";
 
 const WorkoutsPage = () => {
   const renderWorkout = ({ item }: { item: any }) => (
+    // Make view like a button to link to workout page
     <View style={styles.workoutCard}>
       <Text style={styles.workoutName}>{item.name}</Text>
       <Text style={styles.workoutDetail}>Duration: {item.duration}</Text>

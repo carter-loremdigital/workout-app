@@ -1,0 +1,86 @@
+[
+  {
+    "id": "1",
+    "name": "Push-Ups",
+    "description": "An upper body exercise that works the chest, shoulders, and triceps.",
+    "muscleGroups": ["chest", "shoulders", "triceps"],
+    "repetitions": 15
+  },
+  {
+    "id": "2",
+    "name": "Pull-Ups",
+    "description": "A back and biceps exercise that requires a bar for pulling.",
+    "muscleGroups": ["back", "biceps"],
+    "repetitions": 10
+  },
+  {
+    "id": "3",
+    "name": "Dips",
+    "description": "A triceps-focused exercise performed on parallel bars or a dip station.",
+    "muscleGroups": ["chest", "triceps", "shoulders"],
+    "repetitions": 12
+  },
+  {
+    "id": "4",
+    "name": "Squats",
+    "description": "A lower body exercise that targets the quads, hamstrings, and glutes.",
+    "muscleGroups": ["quads", "hamstrings", "glutes"],
+    "repetitions": 20
+  },
+  {
+    "id": "5",
+    "name": "Lunges",
+    "description": "A unilateral leg exercise that works the quads, glutes, and hamstrings.",
+    "muscleGroups": ["quads", "glutes", "hamstrings"],
+    "repetitions": 15
+  },
+  {
+    "id": "6",
+    "name": "Plank",
+    "description": "A core stability exercise that works the abdominals, obliques, and lower back.",
+    "muscleGroups": ["core", "abdominals", "lower back"],
+    "duration": 60
+  },
+  {
+    "id": "7",
+    "name": "Mountain Climbers",
+    "description": "A dynamic full-body exercise that improves core strength and cardio.",
+    "muscleGroups": ["core", "shoulders", "cardiovascular system"],
+    "duration": 30
+  },
+  {
+    "id": "8",
+    "name": "Burpees",
+    "description": "A full-body exercise that combines a squat, push-up, and jump.",
+    "muscleGroups": ["chest", "legs", "core"],
+    "repetitions": 12
+  },
+  {
+    "id": "9",
+    "name": "Leg Raises",
+    "description": "A core exercise that targets the lower abdominals.",
+    "muscleGroups": ["core", "abdominals"],
+    "repetitions": 15
+  },
+  {
+    "id": "10",
+    "name": "Pike Push-Ups",
+    "description": "A push-up variation that targets the shoulders and upper chest.",
+    "muscleGroups": ["shoulders", "triceps", "upper chest"],
+    "repetitions": 10
+  },
+  {
+    "id": "11",
+    "name": "Superman Hold",
+    "description": "An isometric back extension exercise that targets the lower back and glutes.",
+    "muscleGroups": ["lower back", "glutes", "core"],
+    "duration": 30
+  },
+  {
+    "id": "12",
+    "name": "Wall Sit",
+    "description": "An isometric lower body exercise that works the quads and glutes.",
+    "muscleGroups": ["quads", "glutes"],
+    "duration": 45
+  }
+]

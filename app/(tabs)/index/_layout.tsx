@@ -13,6 +13,10 @@ export default function HomeLayout() {
         name="start-workout"
         options={{ title: "Start Workout" }} // Secondary screen
       />
+      <Stack.Screen
+        name="create-workout"
+        options={{ title: "Create Workout" }} // Secondary screen
+      />
     </Stack>
   );
 }

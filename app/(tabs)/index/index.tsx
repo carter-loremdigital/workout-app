@@ -30,7 +30,7 @@ const HomeScreen = () => {
         <Button
           icon="plus"
           mode="outlined"
-          onPress={() => console.log("Button 2 Pressed")}
+          onPress={() => router.push("./create-workout")}
           style={styles.button}
         >
           Create New Workout
