@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Appbar, Button, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlatList } from "react-native";
@@ -19,8 +19,16 @@ const StartWorkoutPage = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineLarge">Select a Workout</Text>
+    <View>
+      <Appbar.Header>
+        <Appbar.BackAction
+          onPress={() => {
+            router.back();
+          }}
+        />
+        <Appbar.Content title="Select Workout" />
+      </Appbar.Header>
+      {/* <Text variant="headlineLarge">Select a Workout</Text> */}
       <Text style={styles.title}>Workout List</Text>
       <FlatList
         data={workouts}

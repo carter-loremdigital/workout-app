@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  SafeAreaView,
-  SectionList,
-  StyleSheet,
-  View,
-  ScrollView,
-} from "react-native";
-import { Text, Card, Button, Appbar } from "react-native-paper";
+import { SectionList, StyleSheet, View, ScrollView } from "react-native";
+import { FAB, Text, Card, Appbar, Searchbar } from "react-native-paper";
 
 // Import the Exercise type and JSON data
 import { Exercise } from "../../../types/exercise";
 import exercisesData from "../../../assets/data/exercises.json";
 import * as FileSystem from "expo-file-system";
 import { Workout } from "../../../types/workout";
-
-// const workoutsPath = FileSystem.documentDirectory + "workouts.json";
+import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Define Section Type
 type Section = {
@@ -27,9 +21,13 @@ const CreateWorkoutPage = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]);
   const [sectionedExercises, setSectionedExercises] = useState<Section[]>([]);
+  const [fabOpen, setFabOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const workoutsPath = FileSystem.documentDirectory + "workouts.json";
-  console.log(workoutsPath);
+  // console.log(workoutsPath);
+
+  const router = useRouter();
 
   useEffect(() => {
     // Sort exercises alphabetically and organize into sections by first letter
@@ -126,24 +124,18 @@ const CreateWorkoutPage = () => {
 
   return (
     <View>
-      {/* style={styles.container}> */}
       {/* Top App Bar with Clear Selection Button */}
       <Appbar.Header>
-        {selectedExercises.length > 0 && (
-          <Button icon="trash-can-outline" mode="text" onPress={clearSelection}>
-            Clear
-          </Button>
-        )}
+        <Appbar.BackAction
+          onPress={() => {
+            router.back();
+          }}
+        />
         <Appbar.Content title="Create Workout" />
-        {selectedExercises.length > 0 && (
-          <Button icon="plus" mode="text" onPress={saveWorkout}>
-            Save
-          </Button>
-        )}
       </Appbar.Header>
 
       {/* Selected Exercises Section */}
-      <ScrollView style={styles.selectedContainer}>
+      {/* <ScrollView style={styles.selectedContainer}>
         <Text style={styles.selectedTitle}>Selected Exercises:</Text>
         {selectedExercises.length > 0 ? (
           selectedExercises.map((exercise, index) => (
@@ -154,10 +146,16 @@ const CreateWorkoutPage = () => {
         ) : (
           <Text style={styles.noSelectionText}>No exercises selected.</Text>
         )}
-      </ScrollView>
+      </ScrollView> */}
 
       {/* Exercise List with Section Index */}
+      {/* <SafeAreaView> */}
       <SectionList
+        // style={styles.exerciseList}
+        // contentContainerStyle={styles.listContent}
+        contentInset={{ bottom: 224 }} // Ensures space for the FAB and tab bar
+        // contentContainerStyle={{ paddingBottom: 80 }} // Adds safe padding at the bottom
+        keyboardShouldPersistTaps="handled" // Ensures taps work seamlessly
         sections={sectionedExercises}
         keyExtractor={(item) => item.id}
         renderSectionHeader={({ section: { title } }) => (
@@ -166,34 +164,80 @@ const CreateWorkoutPage = () => {
         renderItem={({ item }) => {
           const isSelected = selectedExercises.some((ex) => ex.id === item.id);
           return (
-            <Card style={[styles.card, isSelected && styles.selectedCard]}>
+            <Card
+              onPress={() => toggleExerciseSelection(item)}
+              style={[styles.card, isSelected && styles.selectedCard]}
+            >
               <Card.Content>
                 <Text style={styles.exerciseName}>{item.name}</Text>
                 <Text style={styles.exerciseDescription}>
                   {item.description}
                 </Text>
               </Card.Content>
-              <Card.Actions>
-                <Button
-                  mode={isSelected ? "contained" : "outlined"}
-                  onPress={() => toggleExerciseSelection(item)}
-                >
-                  {isSelected ? "Remove" : "Add to Workout"}
-                </Button>
-              </Card.Actions>
             </Card>
           );
         }}
+        ListHeaderComponent={
+          // TODO: Remove focus from search bar on scroll
+          <Searchbar
+            style={styles.searchBar}
+            placeholder="Search"
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+          />
+        }
         stickySectionHeadersEnabled
+      />
+
+      {/* </SafeAreaView> */}
+
+      {/* Floating Action Button */}
+      <FAB.Group
+        style={styles.fab}
+        open={fabOpen}
+        visible
+        icon={fabOpen ? "close" : "pencil"}
+        actions={[
+          {
+            icon: "content-save",
+            label: "Save Workout",
+            onPress: () => saveWorkout(),
+          },
+          {
+            icon: "trash-can-outline",
+            label: "Clear Workout",
+            onPress: () => clearSelection(),
+          },
+        ]}
+        onStateChange={({ open }) => setFabOpen(open)}
+        onPress={() => {
+          // If the FAB is already open, toggle the visibility of the workout details
+          if (fabOpen) {
+            console.log("Expand workout details");
+          }
+        }}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    // flex: 1,
-    // padding: 0,
+  container: {},
+  searchBar: {
+    marginVertical: 16,
+    // paddingHorizontal: 16,
+  },
+  listContent: {
+    paddingBottom: 256, // Add padding to avoid FAB overlap
+    // marginBottom: 2256,
+  },
+  exerciseList: {
+    flex: 1,
+  },
+  fab: {
+    position: "absolute",
+    bottom: 172,
+    right: -8,
   },
   title: {
     fontSize: 24,
@@ -205,7 +249,7 @@ const styles = StyleSheet.create({
     // maxHeight: 120,
     height: 240,
     borderBottomWidth: 1,
-    borderColor: "#ddd",
+    // borderColor: "#ddd",
     paddingBottom: 8,
     paddingHorizontal: 16,
   },
@@ -216,17 +260,17 @@ const styles = StyleSheet.create({
   },
   selectedItem: {
     fontSize: 16,
-    color: "#444",
+    // color: "#444",
     marginVertical: 2,
   },
   noSelectionText: {
     fontSize: 14,
-    color: "#aaa",
+    // color: "#aaa",
   },
   sectionHeader: {
     fontSize: 20,
     fontWeight: "bold",
-    backgroundColor: "#f4f4f4",
+    // backgroundColor: "#f4f4f4",
     padding: 8,
   },
   card: {
@@ -237,7 +281,7 @@ const styles = StyleSheet.create({
   },
   selectedCard: {
     borderColor: "#4caf50",
-    borderWidth: 2,
+    borderWidth: 1,
   },
   exerciseName: {
     fontSize: 18,
@@ -245,7 +289,6 @@ const styles = StyleSheet.create({
   },
   exerciseDescription: {
     fontSize: 14,
-    color: "#666",
     marginTop: 4,
   },
 });

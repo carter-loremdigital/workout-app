@@ -3,7 +3,8 @@ import { StyleSheet, Text, FlatList, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as FileSystem from "expo-file-system";
 import { Card, Button, Dialog, Portal, Paragraph } from "react-native-paper";
-import { Swipeable } from "react-native-gesture-handler";
+// import { Swipeable } from "react-native-gesture-handler";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Workout } from "../../../types/workout";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -11,8 +12,6 @@ const workoutsPath = FileSystem.documentDirectory + "workouts.json";
 
 const MyWorkoutsPage = () => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [workoutToDelete, setWorkoutToDelete] = useState<Workout | null>(null);
-  const [isDialogVisible, setIsDialogVisible] = useState(false);
 
   const loadWorkouts = async () => {
     try {
@@ -62,24 +61,28 @@ const MyWorkoutsPage = () => {
     }
   };
 
-  const handleDeletePress = (workout: Workout) => {
-    setWorkoutToDelete(workout);
-    setIsDialogVisible(true);
-  };
-
-  const confirmDelete = () => {
-    if (workoutToDelete) {
-      deleteWorkout(workoutToDelete.id);
-    }
-    setIsDialogVisible(false);
+  const confirmDelete = (workout: Workout) => {
+    Alert.alert(
+      "Delete Workout",
+      `Are you sure you want to delete "${workout.name}"? This action cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteWorkout(workout.id),
+        },
+      ]
+    );
   };
 
   const renderRightActions = (workout: Workout) => (
     <View style={styles.swipeContainer}>
+      {/* TODO: Add "snackbar" component to confirm deleted workout */}
       <Button
         icon="delete"
         mode="contained"
-        onPress={() => handleDeletePress(workout)}
+        onPress={() => confirmDelete(workout)}
         style={styles.deleteButton}
       >
         Delete
@@ -114,26 +117,6 @@ const MyWorkoutsPage = () => {
           )}
         />
       )}
-
-      {/* Confirmation Dialog */}
-      <Portal>
-        <Dialog
-          visible={isDialogVisible}
-          onDismiss={() => setIsDialogVisible(false)}
-        >
-          <Dialog.Title>Delete Workout</Dialog.Title>
-          <Dialog.Content>
-            <Paragraph>
-              Are you sure you want to delete this workout? This action cannot
-              be undone.
-            </Paragraph>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setIsDialogVisible(false)}>Cancel</Button>
-            <Button onPress={confirmDelete}>Delete</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     </SafeAreaView>
   );
 };
