@@ -22,7 +22,7 @@ const HomeScreen = () => {
           mode="contained"
           // onPress={() => console.log("Button 1 Pressed")}
           // onPress={() => navigation.navigate("/")}
-          onPress={() => router.push("./start-workout")}
+          onPress={() => router.push("./(workouts)/start-workout")}
           style={styles.button}
         >
           Start Workout
@@ -30,7 +30,7 @@ const HomeScreen = () => {
         <Button
           icon="plus"
           mode="outlined"
-          onPress={() => router.push("./create-workout")}
+          onPress={() => router.push("./(workouts)/select-exercises")}
           style={styles.button}
         >
           Create New Workout

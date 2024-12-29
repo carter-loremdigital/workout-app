@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { SectionList, StyleSheet, View, ScrollView } from "react-native";
-import { FAB, Text, Card, Appbar, Searchbar } from "react-native-paper";
+import { SectionList, StyleSheet, View, Keyboard } from "react-native";
+import {
+  Text,
+  Card,
+  Appbar,
+  Searchbar,
+  Button,
+  IconButton,
+} from "react-native-paper";
 
 // Import the Exercise type and JSON data
-import { Exercise } from "../../../types/exercise";
-import exercisesData from "../../../assets/data/exercises.json";
+import { Exercise } from "../../../../types/exercise";
+import exercisesData from "../../../../assets/data/exercises.json";
 import * as FileSystem from "expo-file-system";
-import { Workout } from "../../../types/workout";
+import { Workout } from "../../../../types/workout";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 // Define Section Type
 type Section = {
@@ -21,8 +27,8 @@ const CreateWorkoutPage = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]);
   const [sectionedExercises, setSectionedExercises] = useState<Section[]>([]);
-  const [fabOpen, setFabOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchBarFocused, setSearchBarFocused] = useState(false);
 
   const workoutsPath = FileSystem.documentDirectory + "workouts.json";
   // console.log(workoutsPath);
@@ -57,6 +63,47 @@ const CreateWorkoutPage = () => {
     setExercises(sortedExercises);
     setSectionedExercises(sections);
   }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      // If the search query is empty, reset to original sections
+      setSectionedExercises(() => {
+        const sortedExercises = [...exercisesData].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
+        const groupedByLetter = sortedExercises.reduce<
+          Record<string, Exercise[]>
+        >((acc, exercise) => {
+          const letter = exercise.name[0].toUpperCase();
+          if (!acc[letter]) acc[letter] = [];
+          acc[letter].push(exercise);
+          return acc;
+        }, {});
+
+        const originalSections = Object.keys(groupedByLetter)
+          .sort()
+          .map((letter) => ({
+            title: letter,
+            data: groupedByLetter[letter],
+          }));
+
+        return originalSections;
+      });
+    } else {
+      // Filter sections based on the search query
+      const filteredSections = sectionedExercises
+        .map((section) => ({
+          ...section,
+          data: section.data.filter((exercise) =>
+            exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ),
+        }))
+        .filter((section) => section.data.length > 0); // Remove empty sections
+
+      setSectionedExercises(filteredSections);
+    }
+  }, [searchQuery]);
 
   // Function to handle exercise selection
   const toggleExerciseSelection = (exercise: Exercise) => {
@@ -122,8 +169,16 @@ const CreateWorkoutPage = () => {
     }
   };
 
+  const navigateToDetails = () => {
+    // Serialize selectedExercises for the query string
+    const serializedData = encodeURIComponent(
+      JSON.stringify(selectedExercises)
+    );
+    router.push(`./save-workout?exercises=${serializedData}`);
+  };
+
   return (
-    <View>
+    <View style={styles.container}>
       {/* Top App Bar with Clear Selection Button */}
       <Appbar.Header>
         <Appbar.BackAction
@@ -131,30 +186,16 @@ const CreateWorkoutPage = () => {
             router.back();
           }}
         />
-        <Appbar.Content title="Create Workout" />
+        <Appbar.Content title="Select Exercises" />
+        {selectedExercises.length > 0 && (
+          <IconButton icon="trash-can-outline" onPress={clearSelection} />
+        )}
       </Appbar.Header>
 
-      {/* Selected Exercises Section */}
-      {/* <ScrollView style={styles.selectedContainer}>
-        <Text style={styles.selectedTitle}>Selected Exercises:</Text>
-        {selectedExercises.length > 0 ? (
-          selectedExercises.map((exercise, index) => (
-            <Text key={exercise.id} style={styles.selectedItem}>
-              {index + 1}. {exercise.name}
-            </Text>
-          ))
-        ) : (
-          <Text style={styles.noSelectionText}>No exercises selected.</Text>
-        )}
-      </ScrollView> */}
-
       {/* Exercise List with Section Index */}
-      {/* <SafeAreaView> */}
       <SectionList
-        // style={styles.exerciseList}
-        // contentContainerStyle={styles.listContent}
-        contentInset={{ bottom: 224 }} // Ensures space for the FAB and tab bar
-        // contentContainerStyle={{ paddingBottom: 80 }} // Adds safe padding at the bottom
+        style={styles.exerciseList}
+        contentInset={{ bottom: 72 }} // Ensures space for the FAB and tab bar
         keyboardShouldPersistTaps="handled" // Ensures taps work seamlessly
         sections={sectionedExercises}
         keyExtractor={(item) => item.id}
@@ -184,74 +225,62 @@ const CreateWorkoutPage = () => {
             placeholder="Search"
             onChangeText={setSearchQuery}
             value={searchQuery}
+            onFocus={() => setSearchBarFocused(true)}
+            onBlur={() => setSearchBarFocused(false)}
+            autoCorrect={false}
           />
         }
         stickySectionHeadersEnabled
-      />
-
-      {/* </SafeAreaView> */}
-
-      {/* Floating Action Button */}
-      <FAB.Group
-        style={styles.fab}
-        open={fabOpen}
-        visible
-        icon={fabOpen ? "close" : "pencil"}
-        actions={[
-          {
-            icon: "content-save",
-            label: "Save Workout",
-            onPress: () => saveWorkout(),
-          },
-          {
-            icon: "trash-can-outline",
-            label: "Clear Workout",
-            onPress: () => clearSelection(),
-          },
-        ]}
-        onStateChange={({ open }) => setFabOpen(open)}
-        onPress={() => {
-          // If the FAB is already open, toggle the visibility of the workout details
-          if (fabOpen) {
-            console.log("Expand workout details");
+        onScroll={() => {
+          if (searchBarFocused) {
+            Keyboard.dismiss(); // Dismiss the keyboard when scrolling
+            setSearchBarFocused(false); // Reset the focus state
           }
         }}
       />
+
+      {selectedExercises.length > 0 && (
+        <Button
+          mode="contained"
+          style={styles.floatingButton}
+          // onPress={() => router.push("./save-workout")} // Replace with your route
+          onPress={navigateToDetails} // Replace with your route
+          // onPress={() => console.log("Move to next screen", exercises)} // Replace with your route
+        >
+          {`Next (${selectedExercises.length})`}
+        </Button>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {},
-  searchBar: {
-    marginVertical: 16,
-    // paddingHorizontal: 16,
-  },
-  listContent: {
-    paddingBottom: 256, // Add padding to avoid FAB overlap
-    // marginBottom: 2256,
-  },
-  exerciseList: {
+  container: {
     flex: 1,
+    padding: 0,
   },
-  fab: {
+  floatingButton: {
     position: "absolute",
-    bottom: 172,
-    right: -8,
+    bottom: 96, // Adjust as needed
+    left: 16,
+    right: 16,
+    borderRadius: 24,
+    elevation: 3,
+    zIndex: 10,
   },
+  searchBar: {
+    margin: 16,
+  },
+  // listContent: {
+  // },
+  exerciseList: {
+    marginBottom: 16,
+  },
+
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 16,
-  },
-  selectedContainer: {
-    marginBottom: 16,
-    // maxHeight: 120,
-    height: 240,
-    borderBottomWidth: 1,
-    // borderColor: "#ddd",
-    paddingBottom: 8,
-    paddingHorizontal: 16,
   },
   selectedTitle: {
     fontSize: 18,

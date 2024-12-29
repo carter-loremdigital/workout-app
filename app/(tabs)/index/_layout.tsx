@@ -5,6 +5,8 @@ export default function HomeLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {/* Automatically detects all screens in this folder */}
+      <Stack.Screen name="(workouts)" options={{ headerShown: false }} />
+
       <Stack.Screen
         name="index"
         options={{ title: "Home" }} // Main screen for this tab
@@ -13,10 +15,14 @@ export default function HomeLayout() {
         name="start-workout"
         options={{ title: "Start Workout" }} // Secondary screen
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="create-workout"
         options={{ title: "Create Workout" }} // Secondary screen
       />
+      <Stack.Screen
+        name="save-workout"
+        options={{ title: "Save Workout" }} // Secondary screen
+      /> */}
     </Stack>
   );
 }
