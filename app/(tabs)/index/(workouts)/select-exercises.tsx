@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   // listContent: {
   // },
   exerciseList: {
-    marginBottom: 16,
+    // marginBottom: 16,
   },
 
   title: {

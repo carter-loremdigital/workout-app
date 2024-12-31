@@ -9,8 +9,10 @@ const SaveWorkoutPage = () => {
 
   const { exercises } = useLocalSearchParams();
 
+  console.log(exercises);
+
   // Parse the serialized exercises data
-  const parsedExercises: any = JSON.parse(decodeURIComponent(exercises));
+  // const parsedExercises: any = JSON.parse(decodeURIComponent(exercises));
 
   return (
     <View>

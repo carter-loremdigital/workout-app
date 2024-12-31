@@ -14,6 +14,7 @@ import React from "react";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { WorkoutProvider } from "@/context/WorkoutProvider";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -40,11 +41,13 @@ export default function RootLayout() {
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <WorkoutProvider>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-            <Stack.Screen name="+not-found" />
-          </Stack>
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </WorkoutProvider>
           <StatusBar style="dark" />
         </ThemeProvider>
       </PaperProvider>
