@@ -10,11 +10,12 @@ import {
 } from "react-native-paper";
 
 // Import the Exercise type and JSON data
-import { Exercise } from "../../../../types/exercise";
-import exercisesData from "../../../../assets/data/exercises.json";
+import { Exercise } from "@/types/exercise";
+import exercisesData from "@/assets/data/exercises.json";
 import * as FileSystem from "expo-file-system";
-import { Workout } from "../../../../types/workout";
+import { Workout } from "@/types/workout";
 import { useRouter } from "expo-router";
+import { useWorkout } from "@/context/WorkoutProvider";
 
 // Define Section Type
 type Section = {
@@ -23,8 +24,10 @@ type Section = {
 };
 
 const CreateWorkoutPage = () => {
+  const { workout, setWorkout } = useWorkout(); // Access workout context
+
   // State to manage exercises and selected exercises
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [_, setExercises] = useState<Exercise[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]);
   const [sectionedExercises, setSectionedExercises] = useState<Section[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -122,6 +125,7 @@ const CreateWorkoutPage = () => {
   // Function to clear all selected exercises
   const clearSelection = () => {
     setSelectedExercises([]);
+    setWorkout((prevWorkout) => ({ ...prevWorkout, exercises: [] }));
   };
 
   const saveWorkout = async () => {
@@ -169,12 +173,23 @@ const CreateWorkoutPage = () => {
     }
   };
 
-  const navigateToDetails = () => {
-    // Serialize selectedExercises for the query string
-    const serializedData = encodeURIComponent(
-      JSON.stringify(selectedExercises)
-    );
-    router.push(`./save-workout?exercises=${serializedData}`);
+  // const navigateToDetails = () => {
+  //   // Serialize selectedExercises for the query string
+  //   const serializedData = encodeURIComponent(
+  //     JSON.stringify(selectedExercises)
+  //   );
+  //   router.push(`./save-workout?exercises=${serializedData}`);
+  // };
+
+  const handleNext = () => {
+    // Update global workout context with selected exercises
+    setWorkout((prevWorkout) => ({
+      ...prevWorkout,
+      exercises: selectedExercises, // Save selected exercises to the context
+    }));
+
+    // Navigate to the next page
+    router.push("./save-workout");
   };
 
   return (
@@ -244,7 +259,7 @@ const CreateWorkoutPage = () => {
           mode="contained"
           style={styles.floatingButton}
           // onPress={() => router.push("./save-workout")} // Replace with your route
-          onPress={navigateToDetails} // Replace with your route
+          onPress={handleNext} // Replace with your route
           // onPress={() => console.log("Move to next screen", exercises)} // Replace with your route
         >
           {`Next (${selectedExercises.length})`}
