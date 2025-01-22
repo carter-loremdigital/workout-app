@@ -1,36 +1,48 @@
-import { FlatList, View, StyleSheet, Dimensions } from "react-native";
-import { Appbar, Text, Card, Button, TextInput } from "react-native-paper";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  ScrollView,
+} from "react-native";
+import {
+  Appbar,
+  Text,
+  Card,
+  Button,
+  TextInput,
+  IconButton,
+  Title,
+  Icon,
+} from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useWorkout } from "@/context/WorkoutProvider";
 import { memo, useState } from "react";
-// import DraggableFlatList, {
-//   RenderItemParams,
-// } from "react-native-draggable-flatlist";
+import ExerciseCard from "@/components/ExerciseCard";
+
 import ReorderableList, {
+  NestedReorderableList,
   ReorderableListReorderEvent,
   reorderItems,
-  useReorderableDrag,
+  ScrollViewContainer,
 } from "react-native-reorderable-list";
-
-const screenHeight = Dimensions.get("screen").height;
 
 const SaveWorkoutPage = () => {
   const [workoutTitle, setWorkoutTitle] = useState("");
-  const [scrollEnabled, setScrollEnabled] = useState(false);
   const router = useRouter();
   const { workout, setWorkout } = useWorkout();
 
   // console.log(workout.exercises);
 
-  const [data, setData] = useState(workout.exercises); // Local state for draggable list
-
-  const handleContentSizeChange = (
-    contentWidth: number,
-    contentHeight: number
-  ) => {
-    // Enable scrolling only if the content height exceeds the screen height
-    setScrollEnabled(contentHeight > screenHeight / 2);
-  };
+  const [data, setData] = useState(
+    workout.exercises.map((exercise) => ({
+      ...exercise,
+      sets: 3, // Default sets
+      reps: 10, // Default reps
+    }))
+  );
 
   const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
     setData((currentData) => {
@@ -41,23 +53,38 @@ const SaveWorkoutPage = () => {
     });
   };
 
-  const ExerciseCard = memo(
-    ({ item }: { item: (typeof workout.exercises)[0] }) => {
-      const drag = useReorderableDrag();
+  // Handle deleting an exercise
+  const handleDelete = (id: string) => {
+    setData((currentData) => {
+      const updatedData = currentData.filter((exercise) => exercise.id !== id);
 
-      return (
-        <Card style={styles.card} onLongPress={drag}>
-          <Card.Content>
-            <Text style={styles.exerciseName}>{item.name}</Text>
-            <Text style={styles.exerciseDetails}>{item.description}</Text>
-          </Card.Content>
-        </Card>
-      );
-    }
-  );
+      // Update the global state
+      setWorkout((prevWorkout) => ({
+        ...prevWorkout,
+        exercises: updatedData, // Sync with the filtered data
+      }));
 
-  const renderItem = ({ item }: { item: (typeof workout.exercises)[0] }) => (
-    <ExerciseCard item={item} />
+      return updatedData; // Update local state
+    });
+  };
+
+  const updateExercise = (id: string, key: "sets" | "reps", value: number) => {
+    setData((currentData) =>
+      currentData.map((exercise) =>
+        exercise.id === id ? { ...exercise, [key]: value } : exercise
+      )
+    );
+  };
+
+  const renderItem = ({ item }: { item: (typeof data)[0] }) => (
+    <ExerciseCard
+      exercise={item}
+      sets={item.sets}
+      reps={item.reps}
+      onUpdateSets={(sets) => updateExercise(item.id, "sets", sets)}
+      onUpdateReps={(reps) => updateExercise(item.id, "reps", reps)}
+      onDelete={() => handleDelete(item.id)} // Pass the delete handler
+    />
   );
 
   return (
@@ -68,37 +95,51 @@ const SaveWorkoutPage = () => {
             router.back();
           }}
         />
+
         <Appbar.Content title="Save Workout" />
+
+        {data.length > 0 && (
+          <Button mode="text" onPress={() => console.log("Workout Saved!")}>
+            Save
+          </Button>
+        )}
       </Appbar.Header>
-      <TextInput
-        label="Workout Name"
-        value={workoutTitle}
-        onChangeText={(workoutTitle) => setWorkoutTitle(workoutTitle)}
-        style={styles.titleInput}
-      />
-      {/* Render selected exercises */}
-      {data.length > 0 ? (
-        <ReorderableList
-          data={data}
-          onReorder={handleReorder}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={scrollEnabled}
-          onContentSizeChange={handleContentSizeChange}
-          contentInset={{ bottom: 72 }} // Ensures space for the FAB and tab bar
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No exercises selected.</Text>
+      <ScrollViewContainer>
+        <View>
+          <Title>Workout Name</Title>
+          <TextInput
+            label="Workout Name"
+            value={workoutTitle}
+            onChangeText={(workoutTitle) => setWorkoutTitle(workoutTitle)}
+            style={styles.titleInput}
+          />
         </View>
-      )}
-      <Button
-        mode="contained"
-        onPress={() => console.log("Workout Saved")}
-        style={styles.floatingButton}
-      >
-        Save Workout
-      </Button>
+        <View>
+          <Title>Selected Exercises</Title>
+
+          <Text>
+            <Icon source="information-outline" size={16} />
+            Drag and drop exercises to change the order of your workout. Adjust
+            the number of sets and reps for each exercise using the + and -
+            icons. Swipe left on an exercise to delete it.
+          </Text>
+        </View>
+        {/* Render selected exercises */}
+        {data.length > 0 ? (
+          <NestedReorderableList
+            style={styles.list}
+            data={data}
+            onReorder={handleReorder}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No exercises selected.</Text>
+          </View>
+        )}
+      </ScrollViewContainer>
     </View>
   );
 };
@@ -114,17 +155,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     elevation: 3,
   },
-  floatingButton: {
-    position: "absolute",
-    bottom: 96, // Adjust as needed
-    left: 16,
-    right: 16,
-    borderRadius: 24,
-    elevation: 3,
-    zIndex: 10,
-  },
   titleInput: {
     margin: 16,
+  },
+  list: {
+    paddingBottom: 96,
   },
   exerciseName: {
     fontSize: 18,

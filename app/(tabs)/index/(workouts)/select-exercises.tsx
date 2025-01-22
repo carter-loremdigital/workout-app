@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { SectionList, StyleSheet, View, Keyboard } from "react-native";
+import {
+  SectionList,
+  StyleSheet,
+  View,
+  Keyboard,
+  ScrollView,
+} from "react-native";
 import {
   Text,
   Card,
@@ -202,8 +208,13 @@ const CreateWorkoutPage = () => {
           }}
         />
         <Appbar.Content title="Select Exercises" />
-        {selectedExercises.length > 0 && (
+        {/* {selectedExercises.length > 0 && (
           <IconButton icon="trash-can-outline" onPress={clearSelection} />
+        )} */}
+        {selectedExercises.length > 0 && (
+          <Button mode="text" onPress={handleNext}>
+            {`Next (${selectedExercises.length})`}
+          </Button>
         )}
       </Appbar.Header>
 
@@ -254,7 +265,7 @@ const CreateWorkoutPage = () => {
         }}
       />
 
-      {selectedExercises.length > 0 && (
+      {/* {selectedExercises.length > 0 && (
         <Button
           mode="contained"
           style={styles.floatingButton}
@@ -264,7 +275,7 @@ const CreateWorkoutPage = () => {
         >
           {`Next (${selectedExercises.length})`}
         </Button>
-      )}
+      )} */}
     </View>
   );
 };
