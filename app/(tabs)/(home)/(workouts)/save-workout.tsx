@@ -130,7 +130,7 @@ const SaveWorkoutPage = () => {
       setSnackbarVisible(true);
 
       setData([]); // Clear the selection after saving
-      router.push("/(tabs)/index/index");
+      // router.push("/(tabs)/index/index");
     } catch (error) {
       console.error("Error saving workout:", error);
       setSnackbarMessage("Failed to save workout. Check console for details.");

@@ -23,7 +23,8 @@ const MyWorkoutsPage = () => {
 
         const sortedWorkouts = savedWorkouts.sort((a, b) => {
           return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(b.createdAt as string).getTime() -
+            new Date(a.createdAt as string).getTime()
           );
         });
 
@@ -109,7 +110,8 @@ const MyWorkoutsPage = () => {
                     Exercises: {item.exercises.length}
                   </Text>
                   <Text style={styles.workoutDetails}>
-                    Created: {new Date(item.createdAt).toLocaleDateString()}
+                    Created:{" "}
+                    {new Date(item.createdAt as string).toLocaleDateString()}
                   </Text>
                 </Card.Content>
               </Card>
