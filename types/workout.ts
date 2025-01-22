@@ -5,6 +5,6 @@ export type Workout = {
   name: string; // Name of the workout routine
   exercises: Exercise[]; // Array of exercises in this workout
   duration?: number; // Optional total duration in seconds
-  createdAt?: Date; // Date the workout was created
-  updatedAt?: Date; // Optional date for the last update
+  createdAt?: string; // Date the workout was created
+  updatedAt?: string; // Optional date for the last update
 };

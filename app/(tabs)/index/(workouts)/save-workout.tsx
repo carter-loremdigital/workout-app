@@ -16,13 +16,16 @@ import {
   IconButton,
   Title,
   Icon,
+  Snackbar,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useWorkout } from "@/context/WorkoutProvider";
 import { memo, useState } from "react";
 import ExerciseCard from "@/components/ExerciseCard";
+import { Workout } from "@/types";
+import * as FileSystem from "expo-file-system";
 
-import ReorderableList, {
+import {
   NestedReorderableList,
   ReorderableListReorderEvent,
   reorderItems,
@@ -31,6 +34,9 @@ import ReorderableList, {
 
 const SaveWorkoutPage = () => {
   const [workoutTitle, setWorkoutTitle] = useState("");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarError, setSnackbarError] = useState(false);
   const router = useRouter();
   const { workout, setWorkout } = useWorkout();
 
@@ -43,6 +49,8 @@ const SaveWorkoutPage = () => {
       reps: 10, // Default reps
     }))
   );
+
+  const workoutsPath = FileSystem.documentDirectory + "workouts.json";
 
   const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
     setData((currentData) => {
@@ -76,6 +84,61 @@ const SaveWorkoutPage = () => {
     );
   };
 
+  const saveWorkout = async () => {
+    if (data.length === 0) {
+      alert("Please select at least one exercise.");
+      return;
+    }
+
+    const newWorkout: Workout = {
+      id: Date.now().toString(),
+      name: workoutTitle || `Workout ${new Date().toLocaleDateString()}`,
+      exercises: data,
+      createdAt: new Date().toISOString(),
+      // duration: data.reduce((total, exercise) => {
+      //   return total + (exercise.duration || 0);
+      // }, 0),
+    };
+
+    console.log(newWorkout);
+
+    try {
+      const fileExists = await FileSystem.getInfoAsync(workoutsPath);
+      console.log(workoutsPath);
+      let workouts: Workout[] = [];
+
+      if (fileExists.exists) {
+        // Read the existing file
+        const data = await FileSystem.readAsStringAsync(workoutsPath);
+        console.log("Existing Workouts Data:", data);
+        workouts = JSON.parse(data) as Workout[];
+      }
+
+      // Append the new workout
+      workouts.push(newWorkout);
+
+      // Write the updated workouts array back to the file
+      await FileSystem.writeAsStringAsync(
+        workoutsPath,
+        JSON.stringify(workouts, null, 2)
+      );
+      console.log("Workout saved successfully.");
+      // alert("Workout saved successfully!");
+
+      setSnackbarMessage("Workout saved successfully!");
+      setSnackbarError(false);
+      setSnackbarVisible(true);
+
+      setData([]); // Clear the selection after saving
+      router.push("/(tabs)/index/index");
+    } catch (error) {
+      console.error("Error saving workout:", error);
+      setSnackbarMessage("Failed to save workout. Check console for details.");
+      setSnackbarError(true);
+      setSnackbarVisible(true);
+    }
+  };
+
   const renderItem = ({ item }: { item: (typeof data)[0] }) => (
     <ExerciseCard
       exercise={item}
@@ -99,7 +162,7 @@ const SaveWorkoutPage = () => {
         <Appbar.Content title="Save Workout" />
 
         {data.length > 0 && (
-          <Button mode="text" onPress={() => console.log("Workout Saved!")}>
+          <Button mode="text" onPress={saveWorkout}>
             Save
           </Button>
         )}
@@ -140,6 +203,16 @@ const SaveWorkoutPage = () => {
           </View>
         )}
       </ScrollViewContainer>
+
+      {/* Snackbar for Feedback */}
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={snackbarError ? styles.errorSnackbar : styles.successSnackbar}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };
@@ -187,6 +260,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
     color: "#666",
+  },
+
+  errorSnackbar: {
+    backgroundColor: "red",
+    marginBottom: 96,
+  },
+  successSnackbar: {
+    backgroundColor: "green",
+    marginBottom: 96,
   },
 });
 

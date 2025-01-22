@@ -4,5 +4,6 @@ export type Exercise = {
   description?: string; // Optional description of the exercise
   muscleGroups: string[]; // List of muscle groups targeted (e.g., ["chest", "triceps"])
   duration?: number; // Optional duration in seconds for timed exercises
+  sets?: number; // Optional number of sets for rep-based exercises
   repetitions?: number; // Optional number of repetitions for rep-based exercises
 };

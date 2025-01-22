@@ -144,7 +144,7 @@ const CreateWorkoutPage = () => {
       id: Date.now().toString(),
       name: `Workout ${new Date().toLocaleDateString()}`,
       exercises: selectedExercises,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       duration: selectedExercises.reduce((total, exercise) => {
         return total + (exercise.duration || 0);
       }, 0),
