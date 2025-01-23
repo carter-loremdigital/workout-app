@@ -130,7 +130,13 @@ const SaveWorkoutPage = () => {
       setSnackbarVisible(true);
 
       setData([]); // Clear the selection after saving
-      // router.push("/(tabs)/index/index");
+      // router.push("/");
+
+      // Redirect to home with query parameters
+      router.push({
+        pathname: "/",
+        params: { success: "true" },
+      });
     } catch (error) {
       console.error("Error saving workout:", error);
       setSnackbarMessage("Failed to save workout. Check console for details.");
@@ -205,14 +211,14 @@ const SaveWorkoutPage = () => {
       </ScrollViewContainer>
 
       {/* Snackbar for Feedback */}
-      <Snackbar
+      {/* <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
         style={snackbarError ? styles.errorSnackbar : styles.successSnackbar}
       >
         {snackbarMessage}
-      </Snackbar>
+      </Snackbar> */}
     </View>
   );
 };

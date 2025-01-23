@@ -1,66 +1,183 @@
-import React from "react";
-import { StyleSheet, View, FlatList, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useEffect, useState } from "react";
+import { SectionList, StyleSheet, View, Keyboard } from "react-native";
+import { Text, Card, Appbar, Searchbar, IconButton } from "react-native-paper";
 
-import workouts from "../../../assets/data/workouts.json";
+// Import the Exercise type and JSON data
+import { Exercise } from "@/types/exercise";
+import exercisesData from "@/assets/data/exercises.json";
+import { useRouter } from "expo-router";
+import { useWorkout } from "@/context/WorkoutProvider";
 
-const WorkoutsPage = () => {
-  const renderWorkout = ({ item }: { item: any }) => (
-    // Make view like a button to link to workout page
-    <View style={styles.workoutCard}>
-      <Text style={styles.workoutName}>{item.name}</Text>
-      <Text style={styles.workoutDetail}>Duration: {item.duration}</Text>
-      <Text style={styles.workoutDetail}>Difficulty: {item.difficulty}</Text>
-    </View>
-  );
+// Define Section Type
+type Section = {
+  title: string;
+  data: Exercise[];
+};
+
+const CreateWorkoutPage = () => {
+  const { workout, setWorkout } = useWorkout(); // Access workout context
+
+  // State to manage exercises and selected exercises
+  const [sectionedExercises, setSectionedExercises] = useState<Section[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchBarFocused, setSearchBarFocused] = useState(false);
+
+  // console.log(workoutsPath);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      // If the search query is empty, reset to original sections
+      setSectionedExercises(() => {
+        const sortedExercises = [...exercisesData].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
+        const groupedByLetter = sortedExercises.reduce<
+          Record<string, Exercise[]>
+        >((acc, exercise) => {
+          const letter = exercise.name[0].toUpperCase();
+          if (!acc[letter]) acc[letter] = [];
+          acc[letter].push(exercise);
+          return acc;
+        }, {});
+
+        const originalSections = Object.keys(groupedByLetter)
+          .sort()
+          .map((letter) => ({
+            title: letter,
+            data: groupedByLetter[letter],
+          }));
+
+        return originalSections;
+      });
+    } else {
+      // Filter sections based on the search query
+      const filteredSections = sectionedExercises
+        .map((section) => ({
+          ...section,
+          data: section.data.filter((exercise) =>
+            exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ),
+        }))
+        .filter((section) => section.data.length > 0); // Remove empty sections
+
+      setSectionedExercises(filteredSections);
+    }
+  }, [searchQuery]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Workout List</Text>
-      <FlatList
-        data={workouts}
-        renderItem={renderWorkout}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
+    <View style={styles.container}>
+      {/* Top App Bar with Clear Selection Button */}
+      <Appbar.Header>
+        <Appbar.BackAction
+          onPress={() => {
+            router.back();
+          }}
+        />
+        <Appbar.Content title="Exercises" />
+
+        <IconButton icon="plus" size={28} />
+      </Appbar.Header>
+
+      {/* Exercise List with Section Index */}
+      <SectionList
+        contentInset={{ bottom: 72 }} // Ensures space for the FAB and tab bar
+        keyboardShouldPersistTaps="handled" // Ensures taps work seamlessly
+        sections={sectionedExercises}
+        keyExtractor={(item) => item.id}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.sectionHeader}>{title}</Text>
+        )}
+        renderItem={({ item }) => {
+          return (
+            <Card style={[styles.card]}>
+              <Card.Content>
+                <Text style={styles.exerciseName}>{item.name}</Text>
+                <Text style={styles.exerciseDescription}>
+                  {item.description}
+                </Text>
+              </Card.Content>
+            </Card>
+          );
+        }}
+        ListHeaderComponent={
+          <Searchbar
+            style={styles.searchBar}
+            placeholder="Search"
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            onFocus={() => setSearchBarFocused(true)}
+            onBlur={() => setSearchBarFocused(false)}
+            autoCorrect={false}
+          />
+        }
+        stickySectionHeadersEnabled
+        onScroll={() => {
+          if (searchBarFocused) {
+            Keyboard.dismiss(); // Dismiss the keyboard when scrolling
+            setSearchBarFocused(false); // Reset the focus state
+          }
+        }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f5f5f5",
+    padding: 0,
+  },
+  floatingButton: {
+    position: "absolute",
+    bottom: 96, // Adjust as needed
+    left: 16,
+    right: 16,
+    borderRadius: 24,
+    elevation: 3,
+    zIndex: 10,
+  },
+  searchBar: {
+    margin: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 16,
-    textAlign: "center",
   },
-  list: {
-    paddingBottom: 16,
+  selectedTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
   },
-  workoutCard: {
-    padding: 16,
+  selectedItem: {
+    fontSize: 16,
+    marginVertical: 2,
+  },
+  noSelectionText: {
+    fontSize: 14,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: "bold",
+    padding: 8,
+  },
+  card: {
     marginBottom: 12,
     borderRadius: 8,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
+    elevation: 3,
+    marginHorizontal: 16,
   },
-  workoutName: {
+  exerciseName: {
     fontSize: 18,
     fontWeight: "bold",
   },
-  workoutDetail: {
+  exerciseDescription: {
     fontSize: 14,
-    color: "#666",
+    marginTop: 4,
   },
 });
 
-export default WorkoutsPage;
+export default CreateWorkoutPage;
