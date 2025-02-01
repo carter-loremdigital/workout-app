@@ -1,25 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  SectionList,
-  StyleSheet,
-  View,
-  Keyboard,
-  ScrollView,
-} from "react-native";
-import {
-  Text,
-  Card,
-  Appbar,
-  Searchbar,
-  Button,
-  IconButton,
-} from "react-native-paper";
+import { SectionList, StyleSheet, View, Keyboard } from "react-native";
+import { Text, Card, Appbar, Searchbar, Button } from "react-native-paper";
 
 // Import the Exercise type and JSON data
 import { Exercise } from "@/types/exercise";
 import exercisesData from "@/assets/data/exercises.json";
-import * as FileSystem from "expo-file-system";
-import { Workout } from "@/types/workout";
 import { useRouter } from "expo-router";
 import { useWorkout } from "@/context/WorkoutProvider";
 
@@ -38,9 +23,6 @@ const CreateWorkoutPage = () => {
   const [sectionedExercises, setSectionedExercises] = useState<Section[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchBarFocused, setSearchBarFocused] = useState(false);
-
-  const workoutsPath = FileSystem.documentDirectory + "workouts.json";
-  // console.log(workoutsPath);
 
   const router = useRouter();
 
@@ -114,6 +96,10 @@ const CreateWorkoutPage = () => {
     }
   }, [searchQuery]);
 
+  useEffect(() => {
+    console.log(selectedExercises);
+  }, [selectedExercises]);
+
   // Function to handle exercise selection
   const toggleExerciseSelection = (exercise: Exercise) => {
     const isSelected = selectedExercises.some((ex) => ex.id === exercise.id);
@@ -127,65 +113,6 @@ const CreateWorkoutPage = () => {
       setSelectedExercises((prev) => [...prev, exercise]);
     }
   };
-
-  // Function to clear all selected exercises
-  const clearSelection = () => {
-    setSelectedExercises([]);
-    setWorkout((prevWorkout) => ({ ...prevWorkout, exercises: [] }));
-  };
-
-  const saveWorkout = async () => {
-    if (selectedExercises.length === 0) {
-      alert("Please select at least one exercise.");
-      return;
-    }
-
-    const newWorkout: Workout = {
-      id: Date.now().toString(),
-      name: `Workout ${new Date().toLocaleDateString()}`,
-      exercises: selectedExercises,
-      createdAt: new Date().toISOString(),
-      duration: selectedExercises.reduce((total, exercise) => {
-        return total + (exercise.duration || 0);
-      }, 0),
-    };
-
-    try {
-      const fileExists = await FileSystem.getInfoAsync(workoutsPath);
-      console.log(workoutsPath);
-      let workouts: Workout[] = [];
-
-      if (fileExists.exists) {
-        // Read the existing file
-        const data = await FileSystem.readAsStringAsync(workoutsPath);
-        console.log("Existing Workouts Data:", data);
-        workouts = JSON.parse(data) as Workout[];
-      }
-
-      // Append the new workout
-      workouts.push(newWorkout);
-
-      // Write the updated workouts array back to the file
-      await FileSystem.writeAsStringAsync(
-        workoutsPath,
-        JSON.stringify(workouts, null, 2)
-      );
-      console.log("Workout saved successfully.");
-      alert("Workout saved successfully!");
-      setSelectedExercises([]); // Clear the selection after saving
-    } catch (error) {
-      console.error("Error saving workout:", error);
-      alert("Failed to save workout. Check console for details.");
-    }
-  };
-
-  // const navigateToDetails = () => {
-  //   // Serialize selectedExercises for the query string
-  //   const serializedData = encodeURIComponent(
-  //     JSON.stringify(selectedExercises)
-  //   );
-  //   router.push(`./save-workout?exercises=${serializedData}`);
-  // };
 
   const handleNext = () => {
     // Update global workout context with selected exercises
@@ -208,9 +135,6 @@ const CreateWorkoutPage = () => {
           }}
         />
         <Appbar.Content title="Select Exercises" />
-        {/* {selectedExercises.length > 0 && (
-          <IconButton icon="trash-can-outline" onPress={clearSelection} />
-        )} */}
         {selectedExercises.length > 0 && (
           <Button mode="text" onPress={handleNext}>
             {`Next (${selectedExercises.length})`}
@@ -220,7 +144,6 @@ const CreateWorkoutPage = () => {
 
       {/* Exercise List with Section Index */}
       <SectionList
-        style={styles.exerciseList}
         contentInset={{ bottom: 72 }} // Ensures space for the FAB and tab bar
         keyboardShouldPersistTaps="handled" // Ensures taps work seamlessly
         sections={sectionedExercises}
@@ -264,18 +187,6 @@ const CreateWorkoutPage = () => {
           }
         }}
       />
-
-      {/* {selectedExercises.length > 0 && (
-        <Button
-          mode="contained"
-          style={styles.floatingButton}
-          // onPress={() => router.push("./save-workout")} // Replace with your route
-          onPress={handleNext} // Replace with your route
-          // onPress={() => console.log("Move to next screen", exercises)} // Replace with your route
-        >
-          {`Next (${selectedExercises.length})`}
-        </Button>
-      )} */}
     </View>
   );
 };
@@ -297,12 +208,6 @@ const styles = StyleSheet.create({
   searchBar: {
     margin: 16,
   },
-  // listContent: {
-  // },
-  exerciseList: {
-    // marginBottom: 16,
-  },
-
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -315,17 +220,14 @@ const styles = StyleSheet.create({
   },
   selectedItem: {
     fontSize: 16,
-    // color: "#444",
     marginVertical: 2,
   },
   noSelectionText: {
     fontSize: 14,
-    // color: "#aaa",
   },
   sectionHeader: {
     fontSize: 20,
     fontWeight: "bold",
-    // backgroundColor: "#f4f4f4",
     padding: 8,
   },
   card: {
