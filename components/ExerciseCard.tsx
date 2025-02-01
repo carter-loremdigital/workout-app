@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useRef } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Card, IconButton } from "react-native-paper";
 import Animated, {
@@ -64,6 +64,29 @@ const ExerciseCard = memo(
       </View>
     );
 
+    // Refs to track intervals
+    const setsInterval = useRef<NodeJS.Timeout | null>(null);
+    const repsInterval = useRef<NodeJS.Timeout | null>(null);
+
+    // Helper to start interval
+    const startInterval = (
+      updateFn: () => void,
+      intervalRef: React.MutableRefObject<NodeJS.Timeout | null>
+    ) => {
+      updateFn(); // Trigger the first update immediately
+      intervalRef.current = setInterval(updateFn, 100); // Repeated updates
+    };
+
+    // Helper to clear interval
+    const stopInterval = (
+      intervalRef: React.MutableRefObject<NodeJS.Timeout | null>
+    ) => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+
     return (
       <Swipeable renderRightActions={renderRightActions}>
         <Animated.View style={[styles.card, animatedStyle]}>
@@ -82,12 +105,26 @@ const ExerciseCard = memo(
                       icon="minus"
                       size={20}
                       onPress={() => onUpdateSets(Math.max(1, sets - 1))}
+                      onPressIn={() =>
+                        startInterval(
+                          () => onUpdateSets(Math.max(1, sets - 1)),
+                          setsInterval
+                        )
+                      }
+                      onPressOut={() => stopInterval(setsInterval)}
                     />
                     <Text style={styles.counterValue}>{sets}</Text>
                     <IconButton
                       icon="plus"
                       size={20}
                       onPress={() => onUpdateSets(sets + 1)}
+                      onPressIn={() =>
+                        startInterval(
+                          () => onUpdateSets(sets + 1),
+                          setsInterval
+                        )
+                      }
+                      onPressOut={() => stopInterval(setsInterval)}
                     />
                   </View>
                 </View>
@@ -100,12 +137,26 @@ const ExerciseCard = memo(
                       icon="minus"
                       size={20}
                       onPress={() => onUpdateReps(Math.max(1, reps - 1))}
+                      // onPressIn={() =>
+                      //   startInterval(
+                      //     () => onUpdateReps(Math.max(1, reps - 1)),
+                      //     repsInterval
+                      //   )
+                      // }
+                      // onPressOut={() => stopInterval(repsInterval)}
                     />
                     <Text style={styles.counterValue}>{reps}</Text>
                     <IconButton
                       icon="plus"
                       size={20}
                       onPress={() => onUpdateReps(reps + 1)}
+                      // onPressIn={() =>
+                      //   startInterval(
+                      //     () => onUpdateReps(reps + 1),
+                      //     repsInterval
+                      //   )
+                      // }
+                      // onPressOut={() => stopInterval(repsInterval)}
                     />
                   </View>
                 </View>
